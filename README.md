@@ -1,5 +1,7 @@
 # Dusk
 
+[Open Dusk](https://syymza.github.io/dusk/)
+
 A quiet, browser-only evening with 200 birds. Brush the sky with a finger or pointer; the flock parts, turns, and gathers again. Pause holds the scene still. Reset restores the seeded flock.
 
 ## Local preview
@@ -8,7 +10,7 @@ No dependencies or build step are required. With Node.js installed, run `npm sta
 
 For a single-file preview that can be opened directly without a server, run `node scripts/build-preview.js` and open `test-results/Dusk.html`. This file contains the same CSS and simulation as the modular source.
 
-The page is static and uses relative asset URLs, so its source files can later be hosted on GitHub Pages. Nothing has been published and no remote repository has been created.
+The page is static and uses relative asset URLs, so its source files can later be hosted on GitHub Pages. The public demo is published from the `main` branch on GitHub Pages.
 
 ## Model and timing
 
