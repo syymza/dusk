@@ -2,8 +2,8 @@
 * { box-sizing: border-box; }
 html, body, main { width: 100%; height: 100%; margin: 0; overflow: hidden; }
 main { position: relative; height: 100svh; height: 100dvh; isolation: isolate; }
-canvas { display: block; width: 100%; height: 100%; touch-action: none; -webkit-tap-highlight-color: transparent; }
-header { position: absolute; top: max(28px, env(safe-area-inset-top)); left: max(28px, env(safe-area-inset-left)); pointer-events: none; }
+canvas { display: block; width: 100%; height: 100%; touch-action: none; -webkit-tap-highlight-color: transparent; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+header { position: absolute; top: max(28px, env(safe-area-inset-top)); left: max(28px, env(safe-area-inset-left)); pointer-events: none; -webkit-user-select: none; user-select: none; }
 h1 { font-weight: 400; font-size: 18px; letter-spacing: -.3px; line-height: 1; margin: 0; opacity: .7; }
 footer { position: absolute; bottom: max(18px, env(safe-area-inset-bottom)); right: max(24px, env(safe-area-inset-right)); }
 nav { display: flex; align-items: center; gap: 12px; }
@@ -18,3 +18,7 @@ button:focus-visible { outline: 1px solid #3e4056; outline-offset: 5px; }
   footer { right: 20px; bottom: max(18px, env(safe-area-inset-bottom)); }
   nav { gap: 8px; }
 }
+
+.contact { position: absolute; z-index: 1; width: 56px; height: 56px; border: 1.2px solid #f8ead5c9; border-radius: 50%; box-shadow: 0 0 0 1px #30344755, 0 0 28px 12px #fce9df38; transform: translate(-50%, -50%); opacity: 0; pointer-events: none; transition: opacity 180ms ease-out; }
+.contact.is-visible { opacity: 1; }
+@media (prefers-reduced-motion: reduce) { .contact { transition: none; } }
