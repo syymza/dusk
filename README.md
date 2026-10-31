@@ -1,6 +1,6 @@
 # Dusk
 
-A quiet, browser-only evening with 200 birds. Brush the sky with a finger or pointer; the flock parts, turns, and gathers again. Pause holds the scene still. Begin again restores the seeded flock.
+A quiet, browser-only evening with 200 birds. Brush the sky with a finger or pointer; the flock parts, turns, and gathers again. Pause holds the scene still. Reset restores the seeded flock.
 
 ## Local preview
 
@@ -22,6 +22,6 @@ Simulation advances at a fixed 120 Hz with a seeded initial state and interpolat
 
 For browser checks, install Playwright as a development tool, start the local server, and run `node tests/browser-qa.cjs`. An existing Playwright module can be selected with `PLAYWRIGHT_MODULE=/absolute/path/to/playwright`. Screenshots are saved under ignored `test-results/browser/`.
 
-Browser QA was run with locally installed Playwright in Chromium and WebKit at iPhone 13 emulated and desktop sizes. It checks loading, canvas bounds, no scroll, pause/resume/reset, touch or pointer interaction, reduced motion, landscape resizing and page errors. It is emulation, not a physical iPhone test. Cross-engine floating-point trajectories are not asserted identical.
+Browser QA was run with locally installed Playwright in Chromium and WebKit at iPhone 13 emulated and desktop sizes. It checks loading, canvas bounds, no scroll, pause/resume/reset, touch or pointer interaction, reduced motion, landscape resizing and page errors. Chromium uses native protocol touch-drag/cancel and two-finger events. The available WebKit automation API exposes native tap only; its additional drag/cancel and two-finger lifecycle checks use synthetic pointer events backed by a captured native mouse pointer. These exercise application handlers, not native WebKit touch dispatch. It is emulation, not a physical iPhone test. Cross-engine floating-point trajectories are not asserted identical.
 
 No accounts, network calls, analytics, audio or external assets are used by the experience.

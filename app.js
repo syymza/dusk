@@ -4,7 +4,6 @@ const ctx = canvas.getContext('2d', { alpha: false });
 const background = document.createElement('canvas');
 const bg = background.getContext('2d');
 const pause = document.querySelector('#pause');
-const hint = document.querySelector('#hint');
 const status = document.querySelector('#status');
 const reduced = matchMedia('(prefers-reduced-motion: reduce)');
 let width = 0, height = 0, scale = 1, pixelRatio = 1;
@@ -95,11 +94,13 @@ function frame(now) {
 function sync() {
   cancelAnimationFrame(request); request=0; last=null; clock.clear();
   pause.textContent=paused?'Play':'Pause'; pause.setAttribute('aria-pressed',String(paused));
-  hint.textContent=paused?'An evening, held still.':'Brush the sky.';
   if(!paused&&!document.hidden) request=requestAnimationFrame(frame);
   else draw(1);
 }
 function clearPointer() { pointer=null; pointerId=null; }
+function endPointer(event) {
+  if(pointerId===null || event.pointerId===pointerId) clearPointer();
+}
 function move(event) {
   if(pointerId!==null&&event.pointerId!==pointerId) return;
   if(event.pointerType==='touch'&&pointerId===null) return;
@@ -111,10 +112,10 @@ canvas.addEventListener('pointerdown',event=>{
   pointerId=event.pointerId; canvas.setPointerCapture(event.pointerId); move(event);
 });
 canvas.addEventListener('pointermove',move);
-canvas.addEventListener('pointerup',clearPointer);
-canvas.addEventListener('pointercancel',clearPointer);
-canvas.addEventListener('lostpointercapture',clearPointer);
-canvas.addEventListener('pointerleave',clearPointer);
+canvas.addEventListener('pointerup',endPointer);
+canvas.addEventListener('pointercancel',endPointer);
+canvas.addEventListener('lostpointercapture',endPointer);
+canvas.addEventListener('pointerleave',endPointer);
 window.addEventListener('blur',clearPointer);
 pause.addEventListener('click',()=>{paused=!paused; clearPointer(); sync();status.textContent=paused?'Sky paused.':'Birds in flight.';});
 document.querySelector('#reset').addEventListener('click',()=>{flock.reset();clock.clear();last=null;clearPointer();draw(1);status.textContent='The flock has gathered again.';});
