@@ -10,6 +10,7 @@ function replay(fps) {
   }
   return {flock,trajectory};
 }
+test('default flock contains 500 birds after reset',()=>{const flock=new Flock();assert.equal(flock.birds.length,500);flock.step();flock.reset();assert.equal(flock.birds.length,500);});
 test('scripted continuous gesture has identical 30 and 120 fps trajectories at every second',()=>{
   const slow=replay(30), fast=replay(120);
   assert.equal(slow.flock.tick,1440); assert.equal(fast.flock.tick,1440);
@@ -33,7 +34,8 @@ test('two simulated minutes with repeated perturbations stay bounded and regroup
       maxSpeed=Math.max(maxSpeed,Math.hypot(b.vx,b.vy));
     }
   }
-  const cx=flock.birds.reduce((s,b)=>s+b.x,0)/200,cy=flock.birds.reduce((s,b)=>s+b.y,0)/200;
+  const n=flock.birds.length;
+  const cx=flock.birds.reduce((s,b)=>s+b.x,0)/n,cy=flock.birds.reduce((s,b)=>s+b.y,0)/n;
   for(const b of flock.birds)maxRadius=Math.max(maxRadius,Math.hypot(b.x-cx,b.y-cy));
   assert.ok(maxSpeed<=78.000001); assert.ok(maxRadius<300,`regrouped radius ${maxRadius}`);
 });

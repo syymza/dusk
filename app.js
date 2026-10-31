@@ -3,10 +3,11 @@ const canvas = document.querySelector('#sky');
 const ctx = canvas.getContext('2d', { alpha: false });
 const background = document.createElement('canvas');
 const bg = background.getContext('2d');
-const pause = document.querySelector('#pause');
 const contact = document.querySelector('#contact');
+const about = document.querySelector('#about-dialog');
+const openAbout = document.querySelector('#open-about');
 let contactTimer = null;
-const status = document.querySelector('#status');
+const motionNote = document.querySelector('#motion-note');
 const reduced = matchMedia('(prefers-reduced-motion: reduce)');
 let width = 0, height = 0, scale = 1, pixelRatio = 1;
 const flock = new Flock();
@@ -83,15 +84,15 @@ function draw(alpha) {
 }
 function frame(now) {
   request=0;
-  if(paused||document.hidden) { last=null; return; }
+  if(paused||about.open||document.hidden) { last=null; return; }
   const elapsed=last===null?0:(now-last)/1000; last=now;
   const alpha=clock.advance(elapsed,()=>pointer);
   draw(alpha); request=requestAnimationFrame(frame);
 }
 function sync() {
   cancelAnimationFrame(request); request=0; last=null; clock.clear();
-  pause.textContent=paused?'Play':'Pause'; pause.setAttribute('aria-pressed',String(paused));
-  if(!paused&&!document.hidden) request=requestAnimationFrame(frame);
+  motionNote.hidden=!paused;
+  if(!paused&&!about.open&&!document.hidden) request=requestAnimationFrame(frame);
   else draw(1);
 }
 function hideContact() {
@@ -110,6 +111,7 @@ function endPointer(event) {
   } else if(event.type==='pointerleave'&&event.pointerType==='mouse') clearPointer();
 }
 function move(event) {
+  if(about.open) return;
   if(pointerId!==null&&event.pointerId!==pointerId) return;
   if(event.pointerType==='touch'&&pointerId===null) return;
   const bounds=canvas.getBoundingClientRect();
@@ -123,6 +125,7 @@ function move(event) {
   }
 }
 canvas.addEventListener('pointerdown',event=>{
+  if(about.open) return;
   if(pointerId!==null) return;
   event.preventDefault();
   pointerId=event.pointerId;
@@ -139,9 +142,22 @@ canvas.addEventListener('pointerleave',endPointer);
 window.addEventListener('pointerup',endPointer);
 window.addEventListener('pointercancel',endPointer);
 window.addEventListener('blur',clearPointer);
-pause.addEventListener('click',()=>{paused=!paused; clearPointer(); sync();status.textContent=paused?'Sky paused.':'Birds in flight.';});
-document.querySelector('#reset').addEventListener('click',()=>{flock.reset();clock.clear();last=null;clearPointer();draw(1);status.textContent='The flock has gathered again.';});
 reduced.addEventListener('change',()=>{paused=reduced.matches;clearPointer();sync();});
 document.addEventListener('visibilitychange',()=>{clearPointer();sync();});
+openAbout.addEventListener('click',()=>{clearPointer();about.showModal();sync();});
+document.querySelector('#close-about').addEventListener('click',()=>about.close());
+about.addEventListener('close',()=>{sync();openAbout.focus();});
+about.addEventListener('keydown',event=>{
+  if(event.key!=='Tab'||event.altKey||event.ctrlKey||event.metaKey) return;
+  const items=[...about.querySelectorAll('button,a[href]')];
+  const index=items.indexOf(document.activeElement);
+  const next=event.shiftKey?(index<=0?items.length-1:index-1):(index+1)%items.length;
+  event.preventDefault();items[next].focus();
+});
+about.addEventListener('click',event=>{
+  if(event.target!==about) return;
+  const bounds=about.getBoundingClientRect();
+  if(event.clientX<bounds.left||event.clientX>bounds.right||event.clientY<bounds.top||event.clientY>bounds.bottom) about.close();
+});
 window.addEventListener('resize',resize);
 resize(); sync();
