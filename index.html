@@ -10,17 +10,27 @@
 </head>
 <body>
   <main aria-label="Dusk, an interactive evening sky">
-    <canvas id="sky" aria-label="Two hundred birds flocking in an evening sky. Move your finger or pointer through them." role="img"></canvas>
+    <canvas id="sky" aria-label="Five hundred birds flocking in an evening sky. Move your finger or pointer through them." role="img"></canvas>
     <div id="contact" class="contact" aria-hidden="true"></div>
     <header><h1>Dusk</h1></header>
     <footer>
-      <nav aria-label="Sky controls">
-        <button id="pause" type="button" aria-pressed="false">Pause</button>
-        <span aria-hidden="true">/</span>
-        <button id="reset" type="button">Reset</button>
+      <nav aria-label="About Dusk">
+        <button id="open-about" type="button" aria-haspopup="dialog" aria-controls="about-dialog">About</button>
       </nav>
     </footer>
-    <p class="sr-only" id="status" aria-live="polite"></p>
+    <dialog id="about-dialog" aria-labelledby="about-title">
+      <div class="about-heading"><h2 id="about-title">How the flock moves</h2><button id="close-about" type="button" autofocus aria-label="Close about">Close</button></div>
+      <p>Inspired by Craig Reynolds’ Boids. Each bird makes small decisions about its neighbours:</p>
+      <ul>
+        <li><strong>Separation:</strong> leave room.</li>
+        <li><strong>Alignment:</strong> follow their heading.</li>
+        <li><strong>Cohesion:</strong> stay near the group.</li>
+      </ul>
+      <p>Those local choices create flocking without a leader. Your touch acts as an obstacle; nearby birds steer around it.</p>
+      <p>This is a simplified artistic simulation, not a biological model or an exact reproduction.</p>
+      <p id="motion-note" hidden>Reduce Motion is enabled. The scene stays still; touches are still acknowledged.</p>
+      <a href="https://www.red3d.com/cwr/boids/" target="_blank" rel="noopener noreferrer">Craig Reynolds’ original Boids work</a>
+    </dialog>
     <noscript><p class="no-script">Dusk needs JavaScript to bring the birds to life.</p></noscript>
   </main>
   <script type="module" src="app.js"></script>

@@ -4,7 +4,7 @@ export function random(seed) {
   return () => { seed |= 0; seed = seed + 0x6d2b79f5 | 0; let n = Math.imul(seed ^ seed >>> 15, 1 | seed); n ^= n + Math.imul(n ^ n >>> 7, 61 | n); return ((n ^ n >>> 14) >>> 0) / 4294967296; };
 }
 export class Flock {
-  constructor(width = 1000, height = 700, seed = 7619, count = 200) {
+  constructor(width = 1000, height = 700, seed = 7619, count = 500) {
     this.width = width; this.height = height; this.seed = seed; this.count = count;
     this.reset();
   }
@@ -32,15 +32,29 @@ export class Flock {
     const goalX = w * (.5 + .25 * Math.sin(t * .095));
     const goalY = h * (.43 + .13 * Math.sin(t * .14 + .8));
     const next = this.previous;
+    const columns=Math.ceil(w/100),rows=Math.ceil(h/100);
+    if(!this.cells||this.cells.length!==columns*rows) this.cells=new Int32Array(columns*rows);
+    if(!this.links||this.links.length!==n) this.links=new Int32Array(n);
+    const cells=this.cells,links=this.links;
+    cells.fill(-1);
+    for(let i=n-1;i>=0;i--) {
+      const cell=Math.floor(birds[i].y/100)*columns+Math.floor(birds[i].x/100);
+      links[i]=cells[cell];cells[cell]=i;
+    }
     for (let i = 0; i < n; i++) {
       const b = birds[i]; let sx = 0, sy = 0, ax = 0, ay = 0, cx = 0, cy = 0, neighbors = 0;
-      for (let j = 0; j < n; j++) {
-        if (i === j) continue;
-        const o = birds[j], dx = o.x - b.x, dy = o.y - b.y, d2 = dx * dx + dy * dy;
-        if (d2 < 10000 && d2 > .0001) {
-          const d = Math.sqrt(d2);
-          if (d < 19) { const force = (19 - d) / d; sx -= dx * force; sy -= dy * force; }
-          if (dx * b.vx + dy * b.vy > -d * 38) { ax += o.vx; ay += o.vy; cx += o.x; cy += o.y; neighbors++; }
+      const cellX=Math.floor(b.x/100),cellY=Math.floor(b.y/100);
+      for(let y=Math.max(0,cellY-1);y<=Math.min(rows-1,cellY+1);y++) {
+        for(let x=Math.max(0,cellX-1);x<=Math.min(columns-1,cellX+1);x++) {
+          for(let j=cells[y*columns+x];j!==-1;j=links[j]) {
+            if (i === j) continue;
+            const o = birds[j], dx = o.x - b.x, dy = o.y - b.y, d2 = dx * dx + dy * dy;
+            if (d2 < 10000 && d2 > .0001) {
+              const d = Math.sqrt(d2);
+              if (d < 19) { const force = (19 - d) / d; sx -= dx * force; sy -= dy * force; }
+              if (dx * b.vx + dy * b.vy > -d * 38) { ax += o.vx; ay += o.vy; cx += o.x; cy += o.y; neighbors++; }
+            }
+          }
         }
       }
       let fx = sx * 3.3, fy = sy * 3.3;
