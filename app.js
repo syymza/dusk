@@ -4,6 +4,8 @@ const ctx = canvas.getContext('2d', { alpha: false });
 const background = document.createElement('canvas');
 const bg = background.getContext('2d');
 const pause = document.querySelector('#pause');
+const contact = document.querySelector('#contact');
+let contactTimer = null;
 const status = document.querySelector('#status');
 const reduced = matchMedia('(prefers-reduced-motion: reduce)');
 let width = 0, height = 0, scale = 1, pixelRatio = 1;
@@ -47,11 +49,12 @@ function paintBackground() {
   bg.putImageData(grain,0,0);
 }
 function resize() {
-  width=innerWidth; height=innerHeight; pixelRatio=Math.min(devicePixelRatio||1,2);
+  const bounds=canvas.getBoundingClientRect();
+  width=bounds.width; height=bounds.height; pixelRatio=Math.min(devicePixelRatio||1,2);
   canvas.width=Math.round(width*pixelRatio); canvas.height=Math.round(height*pixelRatio);
   scale=Math.min(width/650,height/850);
   flock.resize(width/scale,height/scale);
-  pointer=null; pointerId=null;
+  clearPointer();
   paintBackground(); draw(1);
 }
 function bird(b, old, alpha) {
@@ -76,13 +79,7 @@ function draw(alpha) {
   ctx.setTransform(1,0,0,1,0,0); ctx.drawImage(background,0,0);
   ctx.setTransform(pixelRatio,0,0,pixelRatio,0,0);
   for(let i=0;i<flock.birds.length;i++) bird(flock.birds[i],flock.previous[i],alpha);
-  if(pointer?.active && !paused) {
-    const x=pointer.x*scale,y=pointer.y*scale,r=30;
-    const light=ctx.createRadialGradient(x,y,0,x,y,r);
-    light.addColorStop(0,'#fce9df25'); light.addColorStop(1,'#fce9df00');
-    ctx.fillStyle=light;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();
-    ctx.strokeStyle='#f5e0d955';ctx.lineWidth=.75;ctx.beginPath();ctx.arc(x,y,8,0,Math.PI*2);ctx.stroke();
-  }
+
 }
 function frame(now) {
   request=0;
@@ -97,25 +94,50 @@ function sync() {
   if(!paused&&!document.hidden) request=requestAnimationFrame(frame);
   else draw(1);
 }
-function clearPointer() { pointer=null; pointerId=null; }
+function hideContact() {
+  clearTimeout(contactTimer);
+  contactTimer=null;
+  contact.classList.remove('is-visible','is-active');
+}
+function clearPointer() { pointer=null; pointerId=null; hideContact(); }
 function endPointer(event) {
-  if(pointerId===null || event.pointerId===pointerId) clearPointer();
+  if(pointerId!==null) {
+    if(event.pointerId!==pointerId) return;
+    pointer=null; pointerId=null;
+    contact.classList.remove('is-active');
+    if(event.type==='pointerup') contactTimer=setTimeout(hideContact,260);
+    else hideContact();
+  } else if(event.type==='pointerleave'&&event.pointerType==='mouse') clearPointer();
 }
 function move(event) {
   if(pointerId!==null&&event.pointerId!==pointerId) return;
   if(event.pointerType==='touch'&&pointerId===null) return;
-  if(event.clientX<0||event.clientX>width||event.clientY<0||event.clientY>height) {pointer=null;return;}
-  pointer={x:event.clientX/scale,y:event.clientY/scale,active:true};
+  const bounds=canvas.getBoundingClientRect();
+  const x=event.clientX-bounds.left,y=event.clientY-bounds.top;
+  if(x<0||x>bounds.width||y<0||y>bounds.height) {pointer=null;hideContact();return;}
+  pointer={x:x*width/bounds.width/scale,y:y*height/bounds.height/scale,active:true};
+  if(pointerId!==null) {
+    clearTimeout(contactTimer);contactTimer=null;
+    contact.style.left=x+'px';contact.style.top=y+'px';
+    contact.classList.add('is-visible','is-active');
+  }
 }
 canvas.addEventListener('pointerdown',event=>{
   if(pointerId!==null) return;
-  pointerId=event.pointerId; canvas.setPointerCapture(event.pointerId); move(event);
+  event.preventDefault();
+  pointerId=event.pointerId;
+  move(event);
+  try { canvas.setPointerCapture(event.pointerId); } catch {}
 });
+canvas.addEventListener('contextmenu',event=>event.preventDefault());
+canvas.addEventListener('selectstart',event=>event.preventDefault());
 canvas.addEventListener('pointermove',move);
 canvas.addEventListener('pointerup',endPointer);
 canvas.addEventListener('pointercancel',endPointer);
 canvas.addEventListener('lostpointercapture',endPointer);
 canvas.addEventListener('pointerleave',endPointer);
+window.addEventListener('pointerup',endPointer);
+window.addEventListener('pointercancel',endPointer);
 window.addEventListener('blur',clearPointer);
 pause.addEventListener('click',()=>{paused=!paused; clearPointer(); sync();status.textContent=paused?'Sky paused.':'Birds in flight.';});
 document.querySelector('#reset').addEventListener('click',()=>{flock.reset();clock.clear();last=null;clearPointer();draw(1);status.textContent='The flock has gathered again.';});
