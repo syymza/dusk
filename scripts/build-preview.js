@@ -1,0 +1,11 @@
+import { readFile, writeFile, mkdir } from 'node:fs/promises';
+const root = new URL('../', import.meta.url);
+const read = file => readFile(new URL(file, root), 'utf8');
+let html = await read('index.html');
+html = html.replace('<link rel="stylesheet" href="style.css">', `<style>${await read('style.css')}</style>`);
+const simulation = (await read('simulation.js')).replaceAll('export ', '');
+const app = (await read('app.js')).replace(/^import .*;\n/, '');
+html = html.replace('<script type="module" src="app.js"></script>', `<script type="module">\n${simulation}\n${app}\n</script>`);
+await mkdir(new URL('test-results/', root), { recursive: true });
+await writeFile(new URL('test-results/Dusk.html', root), html);
+console.log('Built test-results/Dusk.html: a self-contained offline preview.');

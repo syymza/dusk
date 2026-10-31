@@ -1,0 +1,1 @@
+{"name":"dusk","version":"0.1.0","private":true,"type":"module","scripts":{"test":"node --test tests/simulation.test.js","start":"node server.js","preview:file":"node scripts/build-preview.js"}}
